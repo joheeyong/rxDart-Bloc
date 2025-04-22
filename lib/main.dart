@@ -16,6 +16,11 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Note CRUD',
+      theme: ThemeData(
+        useMaterial3: true,
+        colorSchemeSeed: Colors.indigo,
+        brightness: Brightness.light,
+      ),
       home: BlocProvider(
         create: (_) => NoteBloc(repository)..add(LoadNotes()),
         child: NotePage(),
@@ -27,45 +32,64 @@ class MyApp extends StatelessWidget {
 class NotePage extends StatelessWidget {
   final TextEditingController controller = TextEditingController();
 
+  NotePage({super.key});
+
   @override
   Widget build(BuildContext context) {
     final bloc = context.read<NoteBloc>();
 
     return Scaffold(
-      appBar: AppBar(title: Text('Note CRUD')),
-      body: StreamBuilder<List<Note>>(
-        stream: bloc.noteStream,
-        builder: (context, snapshot) {
-          final notes = snapshot.data ?? [];
-          return ListView.builder(
-            itemCount: notes.length,
-            itemBuilder: (_, index) {
-              final note = notes[index];
-              return ListTile(
-                title: Text(note.content),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    IconButton(
-                      icon: Icon(Icons.edit),
-                      onPressed: () => _editNoteDialog(context, note),
-                    ),
-                    IconButton(
-                      icon: Icon(Icons.delete),
-                      onPressed: () {
-                        bloc.add(DeleteNote(note.id));
-                      },
-                    ),
-                  ],
-                ),
-              );
-            },
-          );
-        },
+      appBar: AppBar(
+        title: const Text('My Notes', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+        centerTitle: true,
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        surfaceTintColor: Colors.transparent,
       ),
-      floatingActionButton: FloatingActionButton(
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: StreamBuilder<List<Note>>(
+          stream: bloc.noteStream,
+          builder: (context, snapshot) {
+            final notes = snapshot.data ?? [];
+            if (notes.isEmpty) {
+              return const Center(
+                child: Text('📝 아직 메모가 없어요!\n하단 버튼을 눌러 추가해보세요.', textAlign: TextAlign.center),
+              );
+            }
+            return ListView.separated(
+              itemCount: notes.length,
+              separatorBuilder: (_, __) => const SizedBox(height: 12),
+              itemBuilder: (_, index) {
+                final note = notes[index];
+                return Card(
+                  elevation: 2,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  child: ListTile(
+                    title: Text(note.content, style: const TextStyle(fontSize: 16)),
+                    trailing: PopupMenuButton<String>(
+                      onSelected: (value) {
+                        if (value == 'edit') {
+                          _editNoteDialog(context, note);
+                        } else if (value == 'delete') {
+                          bloc.add(DeleteNote(note.id));
+                        }
+                      },
+                      itemBuilder: (_) => [
+                        const PopupMenuItem(value: 'edit', child: Text('수정')),
+                        const PopupMenuItem(value: 'delete', child: Text('삭제')),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            );
+          },
+        ),
+      ),
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _addNoteDialog(context),
-        child: Icon(Icons.add),
+        icon: const Icon(Icons.add),
+        label: const Text('메모 추가'),
       ),
     );
   }
@@ -75,15 +99,22 @@ class NotePage extends StatelessWidget {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        title: Text('Add Note'),
-        content: TextField(controller: controller),
+        title: const Text('메모 추가'),
+        content: TextField(
+          controller: controller,
+          maxLines: null,
+          decoration: const InputDecoration(
+            hintText: '내용을 입력하세요',
+            border: OutlineInputBorder(),
+          ),
+        ),
         actions: [
           TextButton(
             onPressed: () {
               context.read<NoteBloc>().add(AddNote(controller.text));
               Navigator.pop(context);
             },
-            child: Text('Add'),
+            child: const Text('추가'),
           ),
         ],
       ),
@@ -95,8 +126,15 @@ class NotePage extends StatelessWidget {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        title: Text('Edit Note'),
-        content: TextField(controller: controller),
+        title: const Text('메모 수정'),
+        content: TextField(
+          controller: controller,
+          maxLines: null,
+          decoration: const InputDecoration(
+            hintText: '내용을 수정하세요',
+            border: OutlineInputBorder(),
+          ),
+        ),
         actions: [
           TextButton(
             onPressed: () {
@@ -104,7 +142,7 @@ class NotePage extends StatelessWidget {
               context.read<NoteBloc>().add(UpdateNote(updated));
               Navigator.pop(context);
             },
-            child: Text('Update'),
+            child: const Text('수정'),
           ),
         ],
       ),
