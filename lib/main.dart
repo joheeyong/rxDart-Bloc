@@ -1,12 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:home_widget/home_widget.dart';
 import 'bloc/note_bloc.dart';
 import 'bloc/note_event.dart';
 import 'repository/note_repository.dart';
 import 'models/note.dart';
 
-void main() {
+void backgroundCallback(Uri? uri) {
+  print("Background callback triggered");
+  // 위젯을 업데이트하는 간단한 방법
+  HomeWidget.updateWidget(name: "HomeWidget");
+}
+
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await HomeWidget.setAppGroupId('group.rxdartbloc'); // <-- 여기에 너의 App Group ID
+
+
   runApp(MyApp());
+  HomeWidget.registerBackgroundCallback(backgroundCallback);
 }
 
 class MyApp extends StatelessWidget {
