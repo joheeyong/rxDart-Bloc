@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:home_widget/home_widget.dart';
+import 'package:uni_links/uni_links.dart';
 import 'bloc/note_bloc.dart';
 import 'bloc/note_event.dart';
 import 'repository/note_repository.dart';
@@ -10,8 +11,21 @@ void backgroundCallback(Uri? uri) {
   print("Background callback triggered");
   // 위젯을 업데이트하는 간단한 방법
   HomeWidget.updateWidget(name: "HomeWidget");
+  HomeWidget.initiallyLaunchedFromHomeWidget().then(_launchedFromWidget);
+  HomeWidget.widgetClicked.listen((payload) {
+    print("Widget clicked with payload: $payload");
+    // 여기에 위젯 클릭 시 처리할 로직을 추가하세요.
+  });
+
 }
 
+void _launchedFromWidget(Uri? uri) {
+  if (uri != null) {
+    /// home_widget을 클릭 한 후에 하고 싶은 동작을 아래에 자유롭게 수정
+    /// 최근 접속링크 기억하는 코드 작성하기 귀찮아서 우선은 제일 첫번째링크로 접속하게 바꿈,.
+    // _navigateToWebView(_itemList.first);
+  }
+}
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -37,19 +51,48 @@ class MyApp extends StatelessWidget {
       ),
       home: BlocProvider(
         create: (_) => NoteBloc(repository)..add(LoadNotes()),
-        child: NotePage(),
+        child: const NotePage(),
       ),
     );
   }
 }
 
-class NotePage extends StatelessWidget {
+class NotePage extends StatefulWidget {
+
+  const NotePage({super.key});
+
+  @override
+  State<NotePage> createState() => SplashActivityState();
+}
+
+class SplashActivityState extends State<NotePage> {
   final TextEditingController controller = TextEditingController();
 
-  NotePage({super.key});
+  @override
+  void initState() {
+    super.initState();
+
+    initFunction();
+  }
+
+  initFunction(){
+    uriLinkStream.listen((Uri? uri) {
+      if (uri != null) {
+        print("initFunction()");
+        print(uri.toString());
+        // final data = uri.queryParameters['data'];
+        // if (data == 'moveSearch') {
+        //   // 👉 여기에 원하는 동작 수행
+        //   print("moveSearch 명령 수신됨!");
+        // }
+      }
+    });
+  }
+
 
   @override
   Widget build(BuildContext context) {
+    print("ggood");
     final bloc = context.read<NoteBloc>();
 
     return Scaffold(

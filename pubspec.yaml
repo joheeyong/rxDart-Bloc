@@ -39,7 +39,8 @@ dependencies:
   rxdart: ^0.27.7
   shared_preferences: ^2.2.1
   uuid: ^4.3.3
-  home_widget: ^0.7.0+1
+  home_widget: ^0.6.0
+  uni_links: ^0.5.1
 
 dev_dependencies:
   flutter_test:
