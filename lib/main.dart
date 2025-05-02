@@ -30,7 +30,7 @@ void _launchedFromWidget(Uri? uri) {
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await HomeWidget.setAppGroupId('group.rxdartbloc'); // <-- 여기에 너의 App Group ID
+  await HomeWidget.setAppGroupId('group.rxdartbloc');
 
 
   runApp(MyApp());
@@ -39,6 +39,8 @@ Future<void> main() async {
 
 class MyApp extends StatelessWidget {
   final NoteRepository repository = NoteRepository();
+
+  MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -126,7 +128,7 @@ class SplashActivityState extends State<NotePage> {
                     trailing: PopupMenuButton<String>(
                       onSelected: (value) {
                         if (value == 'edit') {
-                          _editNoteDialog(context, note);
+                          editNoteDialog(context, note);
                         } else if (value == 'delete') {
                           bloc.add(DeleteNote(note.id));
                         }
@@ -178,7 +180,7 @@ class SplashActivityState extends State<NotePage> {
     );
   }
 
-  void _editNoteDialog(BuildContext context, Note note) {
+  void editNoteDialog(BuildContext context, Note note) {
     controller.text = note.content;
     showDialog(
       context: context,
